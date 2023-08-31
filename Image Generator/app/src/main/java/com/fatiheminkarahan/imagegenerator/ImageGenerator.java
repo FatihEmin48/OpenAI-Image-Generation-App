@@ -1,13 +1,26 @@
 package com.fatiheminkarahan.imagegenerator;
 
+import static android.Manifest.permission.READ_MEDIA_IMAGES;
+import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import android.annotation.SuppressLint;
+import android.app.backup.FullBackupDataOutput;
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -22,8 +35,11 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Objects;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -42,6 +58,9 @@ public class ImageGenerator extends AppCompatActivity {
 
     MaterialButton saveİmageBtn;
 
+    Bitmap bitmap;
+    BitmapDrawable bitmapDrawable;
+
     public static final MediaType JSON
             = MediaType.get("application/json; charset=utf-8");
 
@@ -53,6 +72,10 @@ public class ImageGenerator extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_generator);
+
+        ActivityCompat.requestPermissions(this,
+                new String[]{READ_MEDIA_IMAGES, WRITE_EXTERNAL_STORAGE},
+                PackageManager.PERMISSION_GRANTED);
 
         inputText = findViewById(R.id.input_text);
         generateBtn = findViewById(R.id.generate_btn);
@@ -69,40 +92,49 @@ public class ImageGenerator extends AppCompatActivity {
             callAPI(text);
         });
 
-        saveİmageBtn.setOnClickListener((v)->{
-            saveToGallery();
+        saveİmageBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //if(ContextCompat.checkSelfPermission(ImageGenerator.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED);
+                saveImage();
+            }
         });
     }
 
-    private void saveToGallery(){
-        BitmapDrawable bitmapDrawable = (BitmapDrawable) imageView.getDrawable();
-        Bitmap bitmap = bitmapDrawable.getBitmap();
+    public void saveImage(){
 
-        FileOutputStream outputStream = null;
-        File file = Environment.getExternalStorageDirectory();
-        File dir = new File(file.getAbsolutePath() + "/MyPics");
-        dir.mkdirs();
+        Uri images;
+        ContentResolver contentResolver = getContentResolver();
 
-        String filename = String.format("%d.png",System.currentTimeMillis());
-        File outFile = new File(dir,filename);
-        try{
-            outputStream = new FileOutputStream(outFile);
-        }catch (Exception e){
-            e.printStackTrace();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q){
+            images = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+        }else{
+            images = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
         }
-        bitmap.compress(Bitmap.CompressFormat.PNG,100,outputStream);
-        try{
-            outputStream.flush();
-        }catch (Exception e){
-            e.printStackTrace();
+
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(MediaStore.Images.Media.DISPLAY_NAME, System.currentTimeMillis() + ".jpg");
+        contentValues.put(MediaStore.Images.Media.MIME_TYPE, "images/*");
+        Uri uri = contentResolver.insert(images, contentValues);
+
+        try {
+            BitmapDrawable bitmapDrawable1 = (BitmapDrawable) imageView.getDrawable();
+            Bitmap bitmap1 = bitmapDrawable1.getBitmap();
+            OutputStream outputStream = contentResolver.openOutputStream(Objects.requireNonNull(uri));
+            bitmap1.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+            Objects.requireNonNull(outputStream);
+
+            Toast.makeText(ImageGenerator.this, "Images Saved Successfully", Toast.LENGTH_LONG).show();
+
+
+
+        } catch (Exception e){;
+            Toast.makeText(ImageGenerator.this, "Images Saved Successfully", Toast.LENGTH_LONG).show();
         }
-        try{
-            outputStream.close();
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
+
     }
+
+
 
 
 
@@ -143,7 +175,16 @@ public class ImageGenerator extends AppCompatActivity {
                     imgUrl = jsonObject1.getString("url");
                     Log.i("IMG_URL: ", imgUrl);
                     loadImage(imgUrl);
+                    /*for (int i = 0; i < jsonArray.length(); i++){
+                        String imgUrl;
+                        JSONObject jsonObject1 = jsonArray.getJSONObject(i);
+                        imgUrl = jsonObject1.getString("url");
+                        Log.i("IMG_URL: ", imgUrl);
+                        loadImage(imgUrl);
+                    }*/
                     String imageUrl = jsonObject.getJSONArray("data").getJSONObject(0).getString("url");
+                    //Log.i("Response : " , imageUrl);
+                    //loadImage(imageUrl);
                     setInProgress(false);
                 }catch (Exception e){
                     e.printStackTrace();
