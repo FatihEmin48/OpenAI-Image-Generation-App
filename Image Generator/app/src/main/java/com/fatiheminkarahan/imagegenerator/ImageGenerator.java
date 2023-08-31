@@ -4,7 +4,10 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -15,8 +18,11 @@ import android.widget.Toast;
 import com.google.android.material.button.MaterialButton;
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 import okhttp3.Call;
@@ -34,6 +40,8 @@ public class ImageGenerator extends AppCompatActivity {
     ProgressBar progressBar;
     ImageView imageView;
 
+    MaterialButton saveİmageBtn;
+
     public static final MediaType JSON
             = MediaType.get("application/json; charset=utf-8");
 
@@ -50,6 +58,7 @@ public class ImageGenerator extends AppCompatActivity {
         generateBtn = findViewById(R.id.generate_btn);
         progressBar = findViewById(R.id.progress_bar);
         imageView = findViewById(R.id.image_view);
+        saveİmageBtn = findViewById(R.id.save_image_btn);
 
         generateBtn.setOnClickListener((v)->{
             String text = inputText.getText().toString().trim();
@@ -59,7 +68,43 @@ public class ImageGenerator extends AppCompatActivity {
             }
             callAPI(text);
         });
+
+        saveİmageBtn.setOnClickListener((v)->{
+            saveToGallery();
+        });
     }
+
+    private void saveToGallery(){
+        BitmapDrawable bitmapDrawable = (BitmapDrawable) imageView.getDrawable();
+        Bitmap bitmap = bitmapDrawable.getBitmap();
+
+        FileOutputStream outputStream = null;
+        File file = Environment.getExternalStorageDirectory();
+        File dir = new File(file.getAbsolutePath() + "/MyPics");
+        dir.mkdirs();
+
+        String filename = String.format("%d.png",System.currentTimeMillis());
+        File outFile = new File(dir,filename);
+        try{
+            outputStream = new FileOutputStream(outFile);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        bitmap.compress(Bitmap.CompressFormat.PNG,100,outputStream);
+        try{
+            outputStream.flush();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        try{
+            outputStream.close();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+
 
     void callAPI(String text){
         //API CALL
@@ -87,11 +132,27 @@ public class ImageGenerator extends AppCompatActivity {
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
 
-                Log.i("Response : " , response.body().string());
+
                 try{
-                    JSONObject jsonObject = new JSONObject(response.body().string());
+                    String deneme = response.body().string();
+                    Log.i("Response : " , deneme);
+                    JSONObject jsonObject = new JSONObject(deneme);
+                    JSONArray jsonArray = jsonObject.getJSONArray("data");
+                    String imgUrl;
+                    JSONObject jsonObject1 = jsonArray.getJSONObject(0);
+                    imgUrl = jsonObject1.getString("url");
+                    Log.i("IMG_URL: ", imgUrl);
+                    loadImage(imgUrl);
+                    /*for (int i = 0; i < jsonArray.length(); i++){
+                        String imgUrl;
+                        JSONObject jsonObject1 = jsonArray.getJSONObject(i);
+                        imgUrl = jsonObject1.getString("url");
+                        Log.i("IMG_URL: ", imgUrl);
+                        loadImage(imgUrl);
+                    }*/
                     String imageUrl = jsonObject.getJSONArray("data").getJSONObject(0).getString("url");
-                    loadImage(imageUrl);
+                    //Log.i("Response : " , imageUrl);
+                    //loadImage(imageUrl);
                     setInProgress(false);
                 }catch (Exception e){
                     e.printStackTrace();
