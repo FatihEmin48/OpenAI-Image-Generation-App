@@ -15,3 +15,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Image Generator"
 include(":app")
+ 
