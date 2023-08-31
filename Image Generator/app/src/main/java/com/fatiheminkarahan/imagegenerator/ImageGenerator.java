@@ -143,16 +143,7 @@ public class ImageGenerator extends AppCompatActivity {
                     imgUrl = jsonObject1.getString("url");
                     Log.i("IMG_URL: ", imgUrl);
                     loadImage(imgUrl);
-                    /*for (int i = 0; i < jsonArray.length(); i++){
-                        String imgUrl;
-                        JSONObject jsonObject1 = jsonArray.getJSONObject(i);
-                        imgUrl = jsonObject1.getString("url");
-                        Log.i("IMG_URL: ", imgUrl);
-                        loadImage(imgUrl);
-                    }*/
                     String imageUrl = jsonObject.getJSONArray("data").getJSONObject(0).getString("url");
-                    //Log.i("Response : " , imageUrl);
-                    //loadImage(imageUrl);
                     setInProgress(false);
                 }catch (Exception e){
                     e.printStackTrace();
