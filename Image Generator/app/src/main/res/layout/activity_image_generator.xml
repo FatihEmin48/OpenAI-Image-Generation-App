@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ImageGenerator"
+    android:layout_margin="20dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Generate Image"
+        android:textSize="40sp"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/text_view"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_centerVertical="true"
+        android:gravity="center">
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="15dp"
+            android:layout_marginVertical="20dp"
+            android:id="@+id/input_text"
+            android:hint="Write here"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="GENERATE"
+            android:padding="15dp"
+            android:id="@+id/generate_btn"/>
+
+        <ProgressBar
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:id="@+id/progress_bar"
+            android:visibility="gone"
+            android:indeterminateTint="#8BC34A"/>
+
+        <ImageView
+            android:layout_width="256dp"
+            android:layout_height="256dp"
+            android:id="@+id/image_view"
+            android:layout_marginTop="40dp"
+            android:src="#837A7676"/>
+
+    </LinearLayout>
+
+
+
+</RelativeLayout>
