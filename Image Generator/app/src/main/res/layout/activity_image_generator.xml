@@ -42,7 +42,7 @@
             android:layout_height="60dp"
             android:id="@+id/progress_bar"
             android:visibility="gone"
-            android:indeterminateTint="#8BC34A"/>
+            android:indeterminateTint="#673AB7"/>
 
         <ImageView
             android:layout_width="256dp"
@@ -50,6 +50,14 @@
             android:id="@+id/image_view"
             android:layout_marginTop="40dp"
             android:src="#837A7676"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="SAVE IMAGE"
+            android:padding="15dp"
+            android:layout_marginTop="40dp"
+            android:id="@+id/save_image_btn"/>
 
     </LinearLayout>
 
